@@ -68,14 +68,17 @@ class QCDataParser:
                     (self.samplesheet_df['lane'] == lane_no) &
                     (self.samplesheet_df['sample_id'] == sample_id)
                 ]
-
-                library_name = \
-                    sample_row['custom_description'].to_string(index=False).split(
-                        "LIBRARY_NAME:"
-                    )[-1].strip()
-                index1 = sample_row['index'].to_string(index=False)
-                index2 = sample_row['index2'].to_string(index=False)
-                sample_project = sample_row['sample_project'].to_string(index=False)
+                if not sample_row['custom_description'].empty:
+                    library_name = \
+                        sample_row['custom_description'].to_string(index=False).split(
+                            "LIBRARY_NAME:"
+                        )[-1].strip()
+                    index1 = sample_row['index'].to_string(index=False)
+                    index2 = sample_row['index2'].to_string(index=False)
+                    sample_project = sample_row['sample_project'].to_string(index=False)
+                else:
+                    # Set empty values as empty string, otherwise it would write an empty Serires i.e Series([], )
+                    library_name = index1 = index2 = sample_project = ""
 
                 read_no = 0
                 for number, read_data in lane_data["reads"].items():
@@ -103,6 +106,6 @@ class QCDataParser:
                         pct_q30=sample_data["percent_q30"],
                         pct_tag_err=100 - sample_data["percent_perfect_index_reads"],
                         library_name=library_name,
-                        mean_q=sample_data["mean_q30"],
+                        mean_q=sample_data["mean_quality_score"],
                     ))
         return results
